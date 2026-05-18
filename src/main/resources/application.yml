@@ -1,0 +1,48 @@
+server:
+  port: 8070
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: gps-tracker-group
+
+      auto-offset-reset: latest
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+
+            use:
+              type:
+                headers: false
+
+            value:
+              default:
+                type: com.tracking.vehicle_gps_service.DTO.VehicleLocation
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tracking_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
