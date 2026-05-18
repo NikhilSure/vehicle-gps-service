@@ -20,5 +20,6 @@ public class GpsLocationConsumer {
     public void consume(VehicleLocation location) {
         log.info("GPS Received : {}", location);
         vehicleTrackingService.updateVehicleLocation(location);
+
     }
 }

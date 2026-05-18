@@ -21,6 +21,57 @@ public class VehicleTrackingService {
 
     private final RedisService redisService;
 
+    public VehicleLocation conevertToDTO(VehicleLocationEntity entity) {
+        return VehicleLocation.builder().vehicleId(entity.getVehicleId())
+                        .lat(entity.getLat())
+                                .lng(entity.getLng())
+                                        .heading(entity.getHeading())
+                                                .timestamp(entity.getTimestamp())
+                                                    .fuelLevel(entity.getFuelLevel())
+                                                        .engineStatus(entity.isEngineStatus())
+                                                            .speed(entity.getSpeed())
+                                                                .build();
+    }
+
+    public VehicleLocationEntity
+    convertToEntity(
+            VehicleLocation vehicleLocation
+    ) {
+
+        VehicleLocationEntity entity =
+                new VehicleLocationEntity();
+
+        entity.setVehicleId(
+                vehicleLocation.getVehicleId()
+        );
+
+        entity.setLat(
+                vehicleLocation.getLat()
+        );
+
+        entity.setLng(
+                vehicleLocation.getLng()
+        );
+
+        entity.setSpeed(
+                vehicleLocation.getSpeed()
+        );
+
+        entity.setFuelLevel(
+                vehicleLocation.getFuelLevel()
+        );
+
+        entity.setEngineStatus(
+                vehicleLocation.isEngineStatus()
+        );
+
+        entity.setTimestamp(
+                vehicleLocation.getTimestamp()
+        );
+
+        return entity;
+    }
+
     public void updateVehicleLocation(VehicleLocation location) {
         log.info("inside updateVehicleLocation:: ");
         redisService.set("vehicle:" + location.getVehicleId(), location);
