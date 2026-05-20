@@ -21,6 +21,7 @@ public class VehicleTrackingService {
 
     private final RedisService redisService;
 
+
     public VehicleLocation conevertToDTO(VehicleLocationEntity entity) {
         return VehicleLocation.builder().vehicleId(entity.getVehicleId())
                         .lat(entity.getLat())
@@ -72,12 +73,12 @@ public class VehicleTrackingService {
         return entity;
     }
 
-    public void updateVehicleLocation(VehicleLocation location) {
+    public VehicleLocationEntity updateVehicleLocation(VehicleLocation location) {
         log.info("inside updateVehicleLocation:: ");
         redisService.set("vehicle:" + location.getVehicleId(), location);
         // for active vehicles
 //        redisService.addMember("vehicles:active", location.getVehicleId());
-        addVehicleGPS(location);
+        return addVehicleGPS(location);
     }
 
 
@@ -97,7 +98,7 @@ public class VehicleTrackingService {
     }
 
     //    DB LEVEL
-    public void addVehicleGPS(VehicleLocation location) {
+    public VehicleLocationEntity addVehicleGPS(VehicleLocation location) {
         VehicleLocationEntity locationEntity = VehicleLocationEntity.builder()
                 .vehicleId(location.getVehicleId())
                     .lat(location.getLat())
@@ -108,7 +109,7 @@ public class VehicleTrackingService {
                                                         .fuelLevel(location.getFuelLevel())
                                                             .engineStatus(location.isEngineStatus())
                                                                 .build();
-        vehilceLocationRepository.save(locationEntity);
+        return vehilceLocationRepository.save(locationEntity);
     }
 
 

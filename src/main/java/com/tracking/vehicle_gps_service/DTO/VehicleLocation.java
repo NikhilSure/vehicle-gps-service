@@ -20,6 +20,7 @@ public class VehicleLocation {
     private Integer speed;
 
     private Integer heading;
+
     private Double fuelLevel;
 
     private boolean engineStatus;

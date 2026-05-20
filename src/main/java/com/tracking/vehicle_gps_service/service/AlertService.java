@@ -3,6 +3,7 @@
     import com.tracking.vehicle_gps_service.DTO.AlertDTO;
     import com.tracking.vehicle_gps_service.DTO.VehicleLocation;
     import com.tracking.vehicle_gps_service.entity.AlertEntity;
+    import com.tracking.vehicle_gps_service.entity.VehicleLocationEntity;
     import com.tracking.vehicle_gps_service.repository.AlertRepository;
     import lombok.RequiredArgsConstructor;
     import org.springframework.stereotype.Service;
@@ -16,7 +17,14 @@
 
         private final VehicleTrackingService vehicleTrackingService;
 
-        public void generateAlerts(VehicleLocation vehicleLocation) {
+        private final WebSocketService webSocketService;
+
+        public AlertDTO convertToDTO(AlertEntity alertEntity) {
+            return AlertDTO.builder().id(alertEntity.getId())
+                    .alert_type(alertEntity.getAlert_type()).message(alertEntity.getMessage()).severity(alertEntity.getSeverity()).timestamp(alertEntity.getTimestamp()).is_read(alertEntity.is_read()).vehicleLocation(vehicleTrackingService.conevertToDTO(alertEntity.getVehicleLocationEntity())).build();
+        }
+
+        public void generateAlerts(VehicleLocationEntity vehicleLocation) {
 
             if (vehicleLocation.getSpeed() >= 100) {
 
@@ -63,7 +71,7 @@
 
         private void createAlert(
 
-                VehicleLocation vehicleLocation,
+                VehicleLocationEntity vehicleLocation,
 
                 String type,
 
@@ -84,15 +92,27 @@
             alertEntity.set_read(false);
 
             alertEntity.setVehicleLocationEntity(
-
-                    vehicleTrackingService
-                            .convertToEntity(vehicleLocation)
+                    vehicleLocation
             );
 
+            webSocketService.sendAlert(convertToDTO(alertEntity));
             saveAlert(alertEntity);
         }
 
         public List<AlertDTO> getAllAlerts() {
+            return alertRepository.findAll().stream().map(item -> AlertDTO.builder()
+                    .id(item.getId())
+                    .severity(item.getSeverity())
+                    .alert_type(item.getAlert_type())
+                    .message(item.getMessage())
+                    .timestamp(item.getTimestamp())
+                    .is_read(item.is_read())
+                    .vehicleLocation(vehicleTrackingService.conevertToDTO(item.getVehicleLocationEntity()))
+                    .build()).toList();
+        }
+
+
+        public List<AlertDTO> getAllAlertsByOrder() {
             return alertRepository.findAll().stream().map(item -> AlertDTO.builder()
                     .id(item.getId())
                     .severity(item.getSeverity())
