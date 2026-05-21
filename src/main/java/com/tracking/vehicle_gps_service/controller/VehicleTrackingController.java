@@ -1,5 +1,6 @@
 package com.tracking.vehicle_gps_service.controller;
 
+import com.tracking.vehicle_gps_service.DTO.VehicleMetrics;
 import com.tracking.vehicle_gps_service.service.VehicleTrackingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +10,7 @@ import com.tracking.vehicle_gps_service.DTO.VehicleLocation;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
@@ -28,5 +30,11 @@ public class VehicleTrackingController {
             @PathVariable String vehicleId
     ) {
         return vehicleTrackingService.getVehicle(vehicleId);
+    }
+
+    @GetMapping("/vehicleMetricsToday")
+    public List<VehicleMetrics> getAllVehicleMetricsToday(
+    ) {
+        return vehicleTrackingService.genAllVehicleMetricsToday();
     }
 }

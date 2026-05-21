@@ -25,4 +25,14 @@ public interface VehicleLocationRepository extends JpaRepository<VehicleLocation
         """,
             nativeQuery = true)
     List<VehicleLocationEntity> findLatestLocation();
+
+
+    List<VehicleLocationEntity>
+
+    findByTimestampBetweenOrderByTimestampAsc(
+
+            Long startTime,
+
+            Long endTime
+    );
 }

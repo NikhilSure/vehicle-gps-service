@@ -1,6 +1,7 @@
 package com.tracking.vehicle_gps_service.service;
 
 import com.tracking.vehicle_gps_service.DTO.VehicleLocation;
+import com.tracking.vehicle_gps_service.DTO.VehicleMetrics;
 import com.tracking.vehicle_gps_service.entity.VehicleLocationEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,10 +9,13 @@ import org.springframework.stereotype.Service;
 import com.tracking.vehicle_gps_service.repository.VehicleLocationRepository;
 
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -141,5 +145,239 @@ public class VehicleTrackingService {
                 .fuelLevel(location.getFuelLevel())
                 .engineStatus(location.isEngineStatus())
                 .build()).toList();
+    }
+
+
+    private double calculateTotalDistance(
+
+            List<VehicleLocationEntity> locations
+    ) {
+
+        if (locations.size() < 2) {
+
+            return 0;
+        }
+
+        double totalDistance = 0;
+
+        for (
+                int i = 1;
+                i < locations.size();
+                i++
+        ) {
+
+            VehicleLocationEntity previous =
+
+                    locations.get(i - 1);
+
+            VehicleLocationEntity current =
+
+                    locations.get(i);
+
+            totalDistance += calculateDistanceKm(
+
+                    previous.getLat(),
+                    previous.getLng(),
+
+                    current.getLat(),
+                    current.getLng()
+            );
+        }
+
+        return totalDistance;
+    }
+
+    private double calculateDistanceKm(
+
+            double lat1,
+
+            double lon1,
+
+            double lat2,
+
+            double lon2
+    ) {
+
+        final int EARTH_RADIUS = 6371;
+
+        double latDistance =
+
+                Math.toRadians(
+                        lat2 - lat1
+                );
+
+        double lonDistance =
+
+                Math.toRadians(
+                        lon2 - lon1
+                );
+
+        double a =
+
+                Math.sin(latDistance / 2)
+                        * Math.sin(latDistance / 2)
+
+                        +
+
+                        Math.cos(
+                                Math.toRadians(lat1)
+                        )
+
+                                *
+
+                                Math.cos(
+                                        Math.toRadians(lat2)
+                                )
+
+                                *
+
+                                Math.sin(lonDistance / 2)
+                                * Math.sin(lonDistance / 2);
+
+        double c =
+
+                2 * Math.atan2(
+                        Math.sqrt(a),
+                        Math.sqrt(1 - a)
+                );
+
+        return EARTH_RADIUS * c;
+    }
+
+    public List<VehicleMetrics>
+    genAllVehicleMetricsToday() {
+
+        LocalDate today = LocalDate.now();
+
+        long startOfDay =
+
+                today.atStartOfDay(
+                                ZoneId.systemDefault()
+                        )
+
+                        .toInstant()
+
+                        .toEpochMilli();
+
+        long endOfDay =
+
+                today.plusDays(1)
+
+                        .atStartOfDay(
+                                ZoneId.systemDefault()
+                        )
+
+                        .toInstant()
+
+                        .toEpochMilli();
+
+        List<VehicleLocationEntity> allLocations =
+
+                vehilceLocationRepository
+
+                        .findByTimestampBetweenOrderByTimestampAsc(
+
+                                startOfDay,
+
+                                endOfDay
+                        );
+
+        Map<String, List<VehicleLocationEntity>>
+                groupedLocations =
+
+                allLocations.stream()
+
+                        .collect(
+
+                                Collectors.groupingBy(
+
+                                        VehicleLocationEntity
+                                                ::getVehicleId
+                                )
+                        );
+
+        List<VehicleMetrics> metrics =
+                new ArrayList<>();
+
+        groupedLocations.forEach(
+
+                (vehicleId, locations) -> {
+
+                    double totalDistance =
+
+                            calculateTotalDistance(
+                                    locations
+                            );
+
+                    double averageSpeed =
+
+                            locations.stream()
+
+                                    .mapToDouble(
+                                            VehicleLocationEntity
+                                                    ::getSpeed
+                                    )
+
+                                    .average()
+
+                                    .orElse(0);
+
+                    double maxSpeed =
+
+                            locations.stream()
+
+                                    .mapToDouble(
+                                            VehicleLocationEntity
+                                                    ::getSpeed
+                                    )
+
+                                    .max()
+
+                                    .orElse(0);
+
+                    VehicleLocationEntity latest =
+
+                            locations.get(
+                                    locations.size() - 1
+                            );
+
+                    metrics.add(
+
+                            VehicleMetrics
+
+                                    .builder()
+
+                                    .vehicleId(vehicleId)
+
+                                    .totalDistanceKm(
+                                            totalDistance
+                                    )
+
+                                    .averageSpeed(
+                                            averageSpeed
+                                    )
+
+                                    .maxSpeed(
+                                            maxSpeed
+                                    )
+
+                                    .totalRecords(
+                                            (long) locations.size()
+                                    )
+
+                                    .latestFuelLevel(
+                                            latest.getFuelLevel()
+                                    )
+
+                                    .engineStatus(
+                                            latest.isEngineStatus()
+                                    )
+
+                                    .build()
+                    );
+                }
+        );
+
+        return metrics;
     }
 }
