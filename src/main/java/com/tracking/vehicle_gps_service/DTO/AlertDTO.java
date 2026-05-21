@@ -20,7 +20,7 @@ public class AlertDTO {
 
     private long timestamp;
 
-    private boolean is_read;
+    private boolean read;
 
     private VehicleLocation vehicleLocation;
 }

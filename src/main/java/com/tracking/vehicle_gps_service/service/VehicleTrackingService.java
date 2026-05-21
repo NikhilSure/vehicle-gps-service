@@ -245,32 +245,7 @@ public class VehicleTrackingService {
     }
 
     public List<VehicleMetrics>
-    genAllVehicleMetricsToday() {
-
-        LocalDate today = LocalDate.now();
-
-        long startOfDay =
-
-                today.atStartOfDay(
-                                ZoneId.systemDefault()
-                        )
-
-                        .toInstant()
-
-                        .toEpochMilli();
-
-        long endOfDay =
-
-                today.plusDays(1)
-
-                        .atStartOfDay(
-                                ZoneId.systemDefault()
-                        )
-
-                        .toInstant()
-
-                        .toEpochMilli();
-
+    genAllVehicleMetricsToday(long startOfDay, long endOfDay) {
         List<VehicleLocationEntity> allLocations =
 
                 vehilceLocationRepository

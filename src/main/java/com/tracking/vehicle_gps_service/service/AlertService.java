@@ -21,7 +21,7 @@
 
         public AlertDTO convertToDTO(AlertEntity alertEntity) {
             return AlertDTO.builder().id(alertEntity.getId())
-                    .alert_type(alertEntity.getAlert_type()).message(alertEntity.getMessage()).severity(alertEntity.getSeverity()).timestamp(alertEntity.getTimestamp()).is_read(alertEntity.is_read()).vehicleLocation(vehicleTrackingService.conevertToDTO(alertEntity.getVehicleLocationEntity())).build();
+                    .alert_type(alertEntity.getAlert_type()).message(alertEntity.getMessage()).severity(alertEntity.getSeverity()).timestamp(alertEntity.getTimestamp()).read(alertEntity.isRead()).vehicleLocation(vehicleTrackingService.conevertToDTO(alertEntity.getVehicleLocationEntity())).build();
         }
 
         public void generateAlerts(VehicleLocationEntity vehicleLocation) {
@@ -89,7 +89,9 @@
 
             alertEntity.setSeverity(severity);
 
-            alertEntity.set_read(false);
+            alertEntity.setRead(false);
+
+            alertEntity.setTimestamp(System.currentTimeMillis());
 
             alertEntity.setVehicleLocationEntity(
                     vehicleLocation
@@ -106,7 +108,7 @@
                     .alert_type(item.getAlert_type())
                     .message(item.getMessage())
                     .timestamp(item.getTimestamp())
-                    .is_read(item.is_read())
+                    .read(item.isRead())
                     .vehicleLocation(vehicleTrackingService.conevertToDTO(item.getVehicleLocationEntity()))
                     .build()).toList();
         }
@@ -119,7 +121,7 @@
                     .alert_type(item.getAlert_type())
                     .message(item.getMessage())
                     .timestamp(item.getTimestamp())
-                    .is_read(item.is_read())
+                    .read(item.isRead())
                     .vehicleLocation(vehicleTrackingService.conevertToDTO(item.getVehicleLocationEntity()))
                     .build()).toList();
         }
@@ -130,6 +132,7 @@
 
         public void setRead(Long alertId) {
             AlertEntity alertEntity = alertRepository.findById(alertId).orElseThrow(() -> new RuntimeException(("Alert not found")));
-            alertEntity.set_read(true);
+            alertEntity.setRead(true);
+            alertRepository.save(alertEntity);
         }
     }

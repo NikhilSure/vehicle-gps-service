@@ -23,7 +23,8 @@ public class AlertEntity {
 
     private long timestamp;
 
-    private boolean is_read;
+    @Column(name = "is_read")
+    private boolean read;
 
     @ManyToOne
     @JoinColumn(name = "vehicleLocationId")
