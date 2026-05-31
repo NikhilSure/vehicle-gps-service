@@ -55,6 +55,8 @@ public class GlobalHandler implements ResponseBodyAdvice<Object> {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception ex) {
 
+        ex.printStackTrace();
+
         ApiResponse<Object> response = ApiResponse.builder()
                 .success(false)
                 .message(ex.getMessage())

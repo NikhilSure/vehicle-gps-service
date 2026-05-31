@@ -26,6 +26,21 @@ public interface VehicleLocationRepository extends JpaRepository<VehicleLocation
             nativeQuery = true)
     List<VehicleLocationEntity> findLatestLocation();
 
+    @Query(value = """
+        SELECT v.*
+        FROM vehicle_location v
+        INNER JOIN (
+            SELECT vehicle_id,
+                   MAX(timestamp) AS max_timestamp
+            FROM vehicle_location where timestamp between :startTs and :endTs
+            GROUP BY vehicle_id
+        ) latest
+        ON v.vehicle_id = latest.vehicle_id
+        AND v.timestamp = latest.max_timestamp
+        """,
+            nativeQuery = true)
+    List<VehicleLocationEntity> getLatestVehicleLocationBetweenTimeStamp(Long startTs,Long endTs);
+
 
     List<VehicleLocationEntity>
 

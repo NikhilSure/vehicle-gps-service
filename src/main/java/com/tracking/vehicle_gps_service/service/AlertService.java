@@ -1,11 +1,14 @@
     package com.tracking.vehicle_gps_service.service;
 
     import com.tracking.vehicle_gps_service.DTO.AlertDTO;
+    import com.tracking.vehicle_gps_service.DTO.PageResponse;
     import com.tracking.vehicle_gps_service.DTO.VehicleLocation;
     import com.tracking.vehicle_gps_service.entity.AlertEntity;
     import com.tracking.vehicle_gps_service.entity.VehicleLocationEntity;
     import com.tracking.vehicle_gps_service.repository.AlertRepository;
     import lombok.RequiredArgsConstructor;
+    import org.springframework.data.domain.Page;
+    import org.springframework.data.domain.Pageable;
     import org.springframework.stereotype.Service;
 
     import java.util.List;
@@ -114,16 +117,29 @@
         }
 
 
-        public List<AlertDTO> getAllAlertsByOrder() {
-            return alertRepository.findAll().stream().map(item -> AlertDTO.builder()
-                    .id(item.getId())
-                    .severity(item.getSeverity())
-                    .alert_type(item.getAlert_type())
-                    .message(item.getMessage())
-                    .timestamp(item.getTimestamp())
-                    .read(item.isRead())
-                    .vehicleLocation(vehicleTrackingService.conevertToDTO(item.getVehicleLocationEntity()))
-                    .build()).toList();
+        public
+        PageResponse
+                <AlertDTO> getAllAlertsByOrder(
+                Pageable pageable
+        ) {
+
+            Page<AlertEntity> pageData =
+                    alertRepository.findAllByOrderByTimestampDesc(pageable);
+
+            List<AlertDTO> alerts = pageData.getContent()
+                    .stream()
+                    .map(this::convertToDTO)
+                    .toList();
+
+            return PageResponse.<AlertDTO>builder()
+                    .content(alerts)
+                    .page(pageData.getNumber())
+                    .size(pageData.getSize())
+                    .first(pageData.isFirst())
+                    .totalElements(pageData.getTotalElements())
+                    .totalPages(pageData.getTotalPages())
+                    .last(pageData.isLast())
+                    .build();
         }
 
         public void saveAlert(AlertEntity alertEntity) {

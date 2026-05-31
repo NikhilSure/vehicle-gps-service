@@ -355,4 +355,8 @@ public class VehicleTrackingService {
 
         return metrics;
     }
+
+    public List<VehicleLocation> getLatestVehicleLocationBetweenTimeStamp(Long startTs, Long endTs) {
+        return vehilceLocationRepository.getLatestVehicleLocationBetweenTimeStamp(startTs, endTs).stream().map(this::conevertToDTO).toList();
+    }
 }
