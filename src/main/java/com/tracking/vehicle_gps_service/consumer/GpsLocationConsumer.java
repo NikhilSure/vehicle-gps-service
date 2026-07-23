@@ -2,6 +2,7 @@ package com.tracking.vehicle_gps_service.consumer;
 
 import com.tracking.vehicle_gps_service.DTO.VehicleLocation;
 import com.tracking.vehicle_gps_service.entity.VehicleLocationEntity;
+import com.tracking.vehicle_gps_service.producer.AlertGenerator;
 import com.tracking.vehicle_gps_service.service.AlertService;
 import com.tracking.vehicle_gps_service.service.VehicleTrackingService;
 import com.tracking.vehicle_gps_service.service.WebSocketService;
@@ -17,9 +18,9 @@ public class GpsLocationConsumer {
 
     private final VehicleTrackingService vehicleTrackingService;
 
-    private  final AlertService alertService;
-
     private final WebSocketService webSocketService;
+
+    private final AlertGenerator alertGenerator;
 
     @KafkaListener(
             topics = "vehicle-location",
@@ -29,6 +30,6 @@ public class GpsLocationConsumer {
         log.info("GPS Received : {}", location);
         VehicleLocationEntity entity = vehicleTrackingService.updateVehicleLocation(location);
         webSocketService.sendLocation(location);
-        alertService.generateAlerts(entity);
+        alertGenerator.publish(entity);
     }
 }

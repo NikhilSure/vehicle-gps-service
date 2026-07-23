@@ -16,39 +16,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 @RestControllerAdvice
 public class GlobalHandler implements ResponseBodyAdvice<Object> {
     @Override
-    public boolean supports(
-            MethodParameter returnType,
-            Class<? extends HttpMessageConverter<?>> converterType
-    ) {
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
         return true;
     }
 
     @Override
-    public Object beforeBodyWrite(
-            Object body,
-            MethodParameter returnType,
-            MediaType selectedContentType,
-            Class<? extends HttpMessageConverter<?>> selectedConverterType,
-            ServerHttpRequest request,
-            ServerHttpResponse response
-    ) {
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
 
         // Avoid wrapping already wrapped responses
         if (body instanceof ApiResponse) {
             return body;
         }
 
-        int statusCode =
-                ((ServletServerHttpResponse) response)
-                        .getServletResponse()
-                        .getStatus();
+        int statusCode = ((ServletServerHttpResponse) response).getServletResponse().getStatus();
 
-        return ApiResponse.builder()
-                .success(statusCode >= 200 && statusCode < 300)
-                .message("Request successful")
-                .data(body)
-                .timestamp(System.currentTimeMillis())
-                .build();
+        return ApiResponse.builder().success(statusCode >= 200 && statusCode < 300).message("Request successful").data(body).timestamp(System.currentTimeMillis()).build();
     }
 
 
@@ -57,12 +39,7 @@ public class GlobalHandler implements ResponseBodyAdvice<Object> {
 
         ex.printStackTrace();
 
-        ApiResponse<Object> response = ApiResponse.builder()
-                .success(false)
-                .message(ex.getMessage())
-                .data(null)
-                .timestamp(System.currentTimeMillis())
-                .build();
+        ApiResponse<Object> response = ApiResponse.builder().success(false).message(ex.getMessage()).data(null).timestamp(System.currentTimeMillis()).build();
 
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }

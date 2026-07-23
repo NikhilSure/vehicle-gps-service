@@ -1,5 +1,6 @@
 package com.tracking.vehicle_gps_service.controller;
 
+import com.tracking.vehicle_gps_service.DTO.DashboardKpiComparisonDTO;
 import com.tracking.vehicle_gps_service.DTO.DashboardKpiDTO;
 import com.tracking.vehicle_gps_service.service.AnalyticsService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class AnalyticsController {
     private  final AnalyticsService analyticsService;
 
     @GetMapping("/kpi")
-    public DashboardKpiDTO getKpis() {
+    public DashboardKpiComparisonDTO getKpis() {
         return analyticsService.generateKpiData();
     }
 }

@@ -39,6 +39,6 @@ public class VehicleTrackingController {
     ) {
         long startDate = payload.getStartDate();
         long endDate = payload.getEndDate();
-        return vehicleTrackingService.genAllVehicleMetricsToday(startDate, endDate);
+        return vehicleTrackingService.genAllVehicleMetrics(startDate, endDate);
     }
 }

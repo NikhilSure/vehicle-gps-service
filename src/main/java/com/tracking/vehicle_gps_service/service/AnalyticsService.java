@@ -1,39 +1,89 @@
 package com.tracking.vehicle_gps_service.service;
 
+import com.tracking.vehicle_gps_service.DTO.DashboardKpiComparisonDTO;
 import com.tracking.vehicle_gps_service.DTO.DashboardKpiDTO;
 import com.tracking.vehicle_gps_service.DTO.VehicleLocation;
+import com.tracking.vehicle_gps_service.DTO.VehicleMetrics;
+import com.tracking.vehicle_gps_service.entity.VehicleLocationEntity;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AnalyticsService {
-    private  final VehicleTrackingService vehicleTrackingService;
+    private final VehicleTrackingService vehicleTrackingService;
 
     private final AlertService alertService;
 
-    public DashboardKpiDTO generateKpiData() {
-        DashboardKpiDTO dashboardKpiDTO = new DashboardKpiDTO();
+    private double calculatePercentageChange(double current, double previous) {
+        if (previous == 0) {
+            return current > 0 ? 100.0 : 0.0;
+        }
 
-        List<VehicleLocation> latestLocations = vehicleTrackingService.getAllLatestVehicleInfoFromDB();
+        return ((current - previous) / previous) * 100;
+    }
 
-        long activeVehicles = (long)latestLocations.size();
-        dashboardKpiDTO.setActiveVehicles(activeVehicles);
+    public DashboardKpiDTO getStats(Long startTs, Long endTs) {
 
-        long onlineVehicles = latestLocations.stream().filter(VehicleLocation::isEngineStatus).count();
+        DashboardKpiDTO dto = new DashboardKpiDTO();
 
-        dashboardKpiDTO.setOnlineVehicles(onlineVehicles);
+        Long activeVehicles = (long) vehicleTrackingService.getActiveVehicles(startTs, endTs).size();
 
-        dashboardKpiDTO.setOfflineVehicles(activeVehicles - onlineVehicles);
+        dto.setActiveVehicles(activeVehicles);
 
-        dashboardKpiDTO.setTotalAlerts((long)alertService.getAllAlerts().size());
+        dto.setTotalAlerts((long) alertService.getAlertBetweenTimestamp(startTs, endTs).size());
 
-        dashboardKpiDTO.setAverageSpeed(latestLocations.stream().mapToDouble(VehicleLocation::getSpeed).average().orElse(0) / activeVehicles);
+        List<VehicleMetrics> metrics = vehicleTrackingService.genAllVehicleMetrics(startTs, endTs);
 
-        dashboardKpiDTO.setLowFuelVehicles(latestLocations.stream().filter(location -> location.getFuelLevel() < 20).count());
+        dto.setTotalDistanceTravelled(Math.round(metrics.stream().mapToDouble(VehicleMetrics::getTotalDistanceKm).sum()));
 
-        return  dashboardKpiDTO;
+        dto.setAverageSpeed(metrics.stream().mapToDouble(VehicleMetrics::getAverageSpeed).average().orElse(0));
+
+        dto.setLowFuelVehicles(metrics.stream().filter(m -> m.getLatestFuelLevel() < 20).count());
+
+        return dto;
+    }
+
+    public DashboardKpiComparisonDTO generateKpiData() {
+
+        LocalDate today = LocalDate.now();
+
+        long todayStart = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        long now = Instant.now().toEpochMilli();
+
+        long yesterdayStart = today.minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        long yesterdayEnd = today.atStartOfDay(ZoneId.systemDefault()).minusNanos(1).toInstant().toEpochMilli();
+
+        DashboardKpiDTO todayStats = getStats(todayStart, now);
+
+        DashboardKpiDTO yesterdayStats = getStats(yesterdayStart, yesterdayEnd);
+
+        return getDashboardKpiComparisonDTO(todayStats, yesterdayStats);
+    }
+
+    private @NonNull DashboardKpiComparisonDTO getDashboardKpiComparisonDTO(DashboardKpiDTO todayStats, DashboardKpiDTO yesterdayStats) {
+        DashboardKpiComparisonDTO response = new DashboardKpiComparisonDTO();
+
+        response.setToday(todayStats);
+        response.setYesterday(yesterdayStats);
+
+        response.setActiveVehiclesChange(calculatePercentageChange(todayStats.getActiveVehicles(), yesterdayStats.getActiveVehicles()));
+
+        response.setTotalDistanceTravelledChange(calculatePercentageChange(todayStats.getTotalDistanceTravelled(), yesterdayStats.getTotalDistanceTravelled()));
+
+        response.setTotalAlertsChange(calculatePercentageChange(todayStats.getTotalAlerts(), yesterdayStats.getTotalAlerts()));
+
+        response.setAverageSpeedChange(calculatePercentageChange(todayStats.getAverageSpeed(), yesterdayStats.getAverageSpeed()));
+
+        response.setLowFuelVehiclesChange(calculatePercentageChange(todayStats.getLowFuelVehicles(), yesterdayStats.getLowFuelVehicles()));
+        return response;
     }
 }

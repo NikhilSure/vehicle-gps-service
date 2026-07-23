@@ -2,7 +2,6 @@
 
     import com.tracking.vehicle_gps_service.DTO.AlertDTO;
     import com.tracking.vehicle_gps_service.DTO.PageResponse;
-    import com.tracking.vehicle_gps_service.DTO.VehicleLocation;
     import com.tracking.vehicle_gps_service.entity.AlertEntity;
     import com.tracking.vehicle_gps_service.entity.VehicleLocationEntity;
     import com.tracking.vehicle_gps_service.repository.AlertRepository;
@@ -105,17 +104,12 @@
         }
 
         public List<AlertDTO> getAllAlerts() {
-            return alertRepository.findAll().stream().map(item -> AlertDTO.builder()
-                    .id(item.getId())
-                    .severity(item.getSeverity())
-                    .alert_type(item.getAlert_type())
-                    .message(item.getMessage())
-                    .timestamp(item.getTimestamp())
-                    .read(item.isRead())
-                    .vehicleLocation(vehicleTrackingService.conevertToDTO(item.getVehicleLocationEntity()))
-                    .build()).toList();
+            return alertRepository.findAll().stream().map(this::convertToDTO).toList();
         }
 
+        public List<AlertDTO> getAlertBetweenTimestamp(Long startTs, Long endTs) {
+            return alertRepository.findAlertsbeetweenTimstamp(startTs, endTs).stream().map(this::convertToDTO).toList();
+        }
 
         public
         PageResponse

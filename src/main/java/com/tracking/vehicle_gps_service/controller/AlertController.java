@@ -14,33 +14,19 @@ import java.util.List;
 @RequestMapping("/api/alerts")
 @RequiredArgsConstructor
 @CrossOrigin("*")
-public class AlertController
-{
+public class AlertController {
     public final AlertService alertService;
 
     @GetMapping
-    public PageResponse
-            <AlertDTO> getAllAlerts(
+    public PageResponse<AlertDTO> getAllAlerts(
 
-            @RequestParam(defaultValue = "0")
-            int page,
+            @RequestParam(defaultValue = "0") int page,
 
-            @RequestParam(defaultValue = "10")
-            int size,
+            @RequestParam(defaultValue = "10") int size) {
 
-            @RequestParam(defaultValue = "timestamp")
-            String sortBy
-    ) {
+        Pageable pageable = PageRequest.of(page, size);
 
-        Pageable pageable =
-                PageRequest.of(
-                        page,
-                        size
-                );
-
-        return alertService.getAllAlertsByOrder(
-                pageable
-        );
+        return alertService.getAllAlertsByOrder(pageable);
     }
 
     @GetMapping("/markRead/{alertId}")

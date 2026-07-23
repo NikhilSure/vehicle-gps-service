@@ -7,39 +7,41 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface VehicleLocationRepository extends JpaRepository<VehicleLocationEntity, Long>{
+public interface VehicleLocationRepository extends JpaRepository<VehicleLocationEntity, Long> {
     public Void deleteByVehicleId(String vehicleId);
+
     public List<VehicleLocationEntity> findByVehicleId(String vehicleid);
 
     @Query(value = """
-        SELECT v.*
-        FROM vehicle_location v
-        INNER JOIN (
-            SELECT vehicle_id,
-                   MAX(timestamp) AS max_timestamp
-            FROM vehicle_location
-            GROUP BY vehicle_id
-        ) latest
-        ON v.vehicle_id = latest.vehicle_id
-        AND v.timestamp = latest.max_timestamp
-        """,
-            nativeQuery = true)
+            SELECT v.*
+            FROM vehicle_location v
+            INNER JOIN (
+                SELECT vehicle_id,
+                       MAX(timestamp) AS max_timestamp
+                FROM vehicle_location
+                GROUP BY vehicle_id
+            ) latest
+            ON v.vehicle_id = latest.vehicle_id
+            AND v.timestamp = latest.max_timestamp
+            """, nativeQuery = true)
     List<VehicleLocationEntity> findLatestLocation();
 
     @Query(value = """
-        SELECT v.*
-        FROM vehicle_location v
-        INNER JOIN (
-            SELECT vehicle_id,
-                   MAX(timestamp) AS max_timestamp
-            FROM vehicle_location where timestamp between :startTs and :endTs
-            GROUP BY vehicle_id
-        ) latest
-        ON v.vehicle_id = latest.vehicle_id
-        AND v.timestamp = latest.max_timestamp
-        """,
-            nativeQuery = true)
-    List<VehicleLocationEntity> getLatestVehicleLocationBetweenTimeStamp(Long startTs,Long endTs);
+            SELECT v.*
+            FROM vehicle_location v
+            INNER JOIN (
+                SELECT vehicle_id,
+                       MAX(timestamp) AS max_timestamp
+                FROM vehicle_location where timestamp between :startTs and :endTs
+                GROUP BY vehicle_id
+            ) latest
+            ON v.vehicle_id = latest.vehicle_id
+            AND v.timestamp = latest.max_timestamp
+            """, nativeQuery = true)
+    List<VehicleLocationEntity> getLatestVehicleLocationBetweenTimeStamp(Long startTs, Long endTs);
+
+
+    List<VehicleLocationEntity> findByTimestampBetween(Long startTs, Long endTs);
 
 
     List<VehicleLocationEntity>
@@ -48,6 +50,8 @@ public interface VehicleLocationRepository extends JpaRepository<VehicleLocation
 
             Long startTime,
 
-            Long endTime
-    );
+            Long endTime);
+
+    @Query("select (distinct(v.vehicleId)) from VehicleLocationEntity v where v.timestamp between:startTs and :endTs")
+    List<String> findActiveVehicleBetweenTimestamp(Long startTs, Long endTs);
 }

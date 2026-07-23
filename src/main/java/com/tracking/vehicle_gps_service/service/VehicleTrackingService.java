@@ -9,12 +9,9 @@ import org.springframework.stereotype.Service;
 import com.tracking.vehicle_gps_service.repository.VehicleLocationRepository;
 
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,52 +24,26 @@ public class VehicleTrackingService {
 
 
     public VehicleLocation conevertToDTO(VehicleLocationEntity entity) {
-        return VehicleLocation.builder().vehicleId(entity.getVehicleId())
-                        .lat(entity.getLat())
-                                .lng(entity.getLng())
-                                        .heading(entity.getHeading())
-                                                .timestamp(entity.getTimestamp())
-                                                    .fuelLevel(entity.getFuelLevel())
-                                                        .engineStatus(entity.isEngineStatus())
-                                                            .speed(entity.getSpeed())
-                                                                .build();
+        return VehicleLocation.builder().vehicleId(entity.getVehicleId()).lat(entity.getLat()).lng(entity.getLng()).heading(entity.getHeading()).timestamp(entity.getTimestamp()).fuelLevel(entity.getFuelLevel()).engineStatus(entity.isEngineStatus()).speed(entity.getSpeed()).build();
     }
 
-    public VehicleLocationEntity
-    convertToEntity(
-            VehicleLocation vehicleLocation
-    ) {
+    public VehicleLocationEntity convertToEntity(VehicleLocation vehicleLocation) {
 
-        VehicleLocationEntity entity =
-                new VehicleLocationEntity();
+        VehicleLocationEntity entity = new VehicleLocationEntity();
 
-        entity.setVehicleId(
-                vehicleLocation.getVehicleId()
-        );
+        entity.setVehicleId(vehicleLocation.getVehicleId());
 
-        entity.setLat(
-                vehicleLocation.getLat()
-        );
+        entity.setLat(vehicleLocation.getLat());
 
-        entity.setLng(
-                vehicleLocation.getLng()
-        );
+        entity.setLng(vehicleLocation.getLng());
 
-        entity.setSpeed(
-                vehicleLocation.getSpeed()
-        );
+        entity.setSpeed(vehicleLocation.getSpeed());
 
-        entity.setFuelLevel(
-                vehicleLocation.getFuelLevel()
-        );
+        entity.setFuelLevel(vehicleLocation.getFuelLevel());
 
-        entity.setEngineStatus(
-                vehicleLocation.isEngineStatus()
-        );
+        entity.setEngineStatus(vehicleLocation.isEngineStatus());
 
-        entity.setTimestamp(
-                vehicleLocation.getTimestamp()
-        );
+        entity.setTimestamp(vehicleLocation.getTimestamp());
 
         return entity;
     }
@@ -103,16 +74,7 @@ public class VehicleTrackingService {
 
     //    DB LEVEL
     public VehicleLocationEntity addVehicleGPS(VehicleLocation location) {
-        VehicleLocationEntity locationEntity = VehicleLocationEntity.builder()
-                .vehicleId(location.getVehicleId())
-                    .lat(location.getLat())
-                            .lng(location.getLng())
-                                    .speed(location.getSpeed())
-                                            .heading(location.getHeading())
-                                                    .timestamp(location.getTimestamp())
-                                                        .fuelLevel(location.getFuelLevel())
-                                                            .engineStatus(location.isEngineStatus())
-                                                                .build();
+        VehicleLocationEntity locationEntity = VehicleLocationEntity.builder().vehicleId(location.getVehicleId()).lat(location.getLat()).lng(location.getLng()).speed(location.getSpeed()).heading(location.getHeading()).timestamp(location.getTimestamp()).fuelLevel(location.getFuelLevel()).engineStatus(location.isEngineStatus()).build();
         return vehilceLocationRepository.save(locationEntity);
     }
 
@@ -122,36 +84,17 @@ public class VehicleTrackingService {
     }
 
     public List<VehicleLocation> getAllVehiclesInfoFromDB(String vehicleid) {
-        return vehilceLocationRepository.findByVehicleId(vehicleid).stream().map(location -> VehicleLocation.builder()
-                .vehicleId(location.getVehicleId())
-                .lat(location.getLat())
-                .lng(location.getLng())
-                .speed(location.getSpeed())
-                .heading(location.getHeading())
-                .timestamp(location.getTimestamp())
-                .fuelLevel(location.getFuelLevel())
-                .engineStatus(location.isEngineStatus())
-                .build()).toList();
+        return vehilceLocationRepository.findByVehicleId(vehicleid).stream().map(location -> VehicleLocation.builder().vehicleId(location.getVehicleId()).lat(location.getLat()).lng(location.getLng()).speed(location.getSpeed()).heading(location.getHeading()).timestamp(location.getTimestamp()).fuelLevel(location.getFuelLevel()).engineStatus(location.isEngineStatus()).build()).toList();
     }
 
     public List<VehicleLocation> getAllLatestVehicleInfoFromDB() {
-        return vehilceLocationRepository.findLatestLocation().stream().map(location -> VehicleLocation.builder()
-                .vehicleId(location.getVehicleId())
-                .lat(location.getLat())
-                .lng(location.getLng())
-                .speed(location.getSpeed())
-                .heading(location.getHeading())
-                .timestamp(location.getTimestamp())
-                .fuelLevel(location.getFuelLevel())
-                .engineStatus(location.isEngineStatus())
-                .build()).toList();
+        return vehilceLocationRepository.findLatestLocation().stream().map(location -> VehicleLocation.builder().vehicleId(location.getVehicleId()).lat(location.getLat()).lng(location.getLng()).speed(location.getSpeed()).heading(location.getHeading()).timestamp(location.getTimestamp()).fuelLevel(location.getFuelLevel()).engineStatus(location.isEngineStatus()).build()).toList();
     }
 
 
     private double calculateTotalDistance(
 
-            List<VehicleLocationEntity> locations
-    ) {
+            List<VehicleLocationEntity> locations) {
 
         if (locations.size() < 2) {
 
@@ -160,11 +103,7 @@ public class VehicleTrackingService {
 
         double totalDistance = 0;
 
-        for (
-                int i = 1;
-                i < locations.size();
-                i++
-        ) {
+        for (int i = 1; i < locations.size(); i++) {
 
             VehicleLocationEntity previous =
 
@@ -176,12 +115,9 @@ public class VehicleTrackingService {
 
             totalDistance += calculateDistanceKm(
 
-                    previous.getLat(),
-                    previous.getLng(),
+                    previous.getLat(), previous.getLng(),
 
-                    current.getLat(),
-                    current.getLng()
-            );
+                    current.getLat(), current.getLng());
         }
 
         return totalDistance;
@@ -195,57 +131,42 @@ public class VehicleTrackingService {
 
             double lat2,
 
-            double lon2
-    ) {
+            double lon2) {
 
         final int EARTH_RADIUS = 6371;
 
         double latDistance =
 
-                Math.toRadians(
-                        lat2 - lat1
-                );
+                Math.toRadians(lat2 - lat1);
 
         double lonDistance =
 
-                Math.toRadians(
-                        lon2 - lon1
-                );
+                Math.toRadians(lon2 - lon1);
 
         double a =
 
-                Math.sin(latDistance / 2)
-                        * Math.sin(latDistance / 2)
+                Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
 
                         +
 
-                        Math.cos(
-                                Math.toRadians(lat1)
-                        )
+                        Math.cos(Math.toRadians(lat1))
 
                                 *
 
-                                Math.cos(
-                                        Math.toRadians(lat2)
-                                )
+                                Math.cos(Math.toRadians(lat2))
 
                                 *
 
-                                Math.sin(lonDistance / 2)
-                                * Math.sin(lonDistance / 2);
+                                Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
 
         double c =
 
-                2 * Math.atan2(
-                        Math.sqrt(a),
-                        Math.sqrt(1 - a)
-                );
+                2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return EARTH_RADIUS * c;
     }
 
-    public List<VehicleMetrics>
-    genAllVehicleMetricsToday(long startOfDay, long endOfDay) {
+    public List<VehicleMetrics> genAllVehicleMetrics(long startOfDay, long endOfDay) {
         List<VehicleLocationEntity> allLocations =
 
                 vehilceLocationRepository
@@ -254,11 +175,9 @@ public class VehicleTrackingService {
 
                                 startOfDay,
 
-                                endOfDay
-                        );
+                                endOfDay);
 
-        Map<String, List<VehicleLocationEntity>>
-                groupedLocations =
+        Map<String, List<VehicleLocationEntity>> groupedLocations =
 
                 allLocations.stream()
 
@@ -266,13 +185,9 @@ public class VehicleTrackingService {
 
                                 Collectors.groupingBy(
 
-                                        VehicleLocationEntity
-                                                ::getVehicleId
-                                )
-                        );
+                                        VehicleLocationEntity::getVehicleId));
 
-        List<VehicleMetrics> metrics =
-                new ArrayList<>();
+        List<VehicleMetrics> metrics = new ArrayList<>();
 
         groupedLocations.forEach(
 
@@ -280,18 +195,13 @@ public class VehicleTrackingService {
 
                     double totalDistance =
 
-                            calculateTotalDistance(
-                                    locations
-                            );
+                            calculateTotalDistance(locations);
 
                     double averageSpeed =
 
                             locations.stream()
 
-                                    .mapToDouble(
-                                            VehicleLocationEntity
-                                                    ::getSpeed
-                                    )
+                                    .mapToDouble(VehicleLocationEntity::getSpeed)
 
                                     .average()
 
@@ -301,10 +211,7 @@ public class VehicleTrackingService {
 
                             locations.stream()
 
-                                    .mapToDouble(
-                                            VehicleLocationEntity
-                                                    ::getSpeed
-                                    )
+                                    .mapToDouble(VehicleLocationEntity::getSpeed)
 
                                     .max()
 
@@ -312,9 +219,7 @@ public class VehicleTrackingService {
 
                     VehicleLocationEntity latest =
 
-                            locations.get(
-                                    locations.size() - 1
-                            );
+                            locations.get(locations.size() - 1);
 
                     metrics.add(
 
@@ -324,39 +229,33 @@ public class VehicleTrackingService {
 
                                     .vehicleId(vehicleId)
 
-                                    .totalDistanceKm(
-                                            totalDistance
-                                    )
+                                    .totalDistanceKm(totalDistance)
 
-                                    .averageSpeed(
-                                            averageSpeed
-                                    )
+                                    .averageSpeed(averageSpeed)
 
-                                    .maxSpeed(
-                                            maxSpeed
-                                    )
+                                    .maxSpeed(maxSpeed)
 
-                                    .totalRecords(
-                                            (long) locations.size()
-                                    )
+                                    .totalRecords((long) locations.size())
 
-                                    .latestFuelLevel(
-                                            latest.getFuelLevel()
-                                    )
+                                    .latestFuelLevel(latest.getFuelLevel())
 
-                                    .engineStatus(
-                                            latest.isEngineStatus()
-                                    )
+                                    .engineStatus(latest.isEngineStatus())
 
-                                    .build()
-                    );
-                }
-        );
+                                    .build());
+                });
 
         return metrics;
     }
 
     public List<VehicleLocation> getLatestVehicleLocationBetweenTimeStamp(Long startTs, Long endTs) {
         return vehilceLocationRepository.getLatestVehicleLocationBetweenTimeStamp(startTs, endTs).stream().map(this::conevertToDTO).toList();
+    }
+
+    public List<VehicleLocation> getLocationsBetweenTimestamp(Long starts, Long endTs) {
+        return vehilceLocationRepository.findByTimestampBetween(starts, endTs).stream().map(this::conevertToDTO).toList();
+    }
+
+    public List<String> getActiveVehicles(Long startTs, Long endTs) {
+        return vehilceLocationRepository.findActiveVehicleBetweenTimestamp(startTs, endTs);
     }
 }

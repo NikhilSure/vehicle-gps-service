@@ -21,17 +21,12 @@ public class RedisService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public <T> void set(
-            String key,
-            T value
-    ) {
+    public <T> void set(String key, T value) {
         try {
 
-            String json =
-                    objectMapper.writeValueAsString(value);
+            String json = objectMapper.writeValueAsString(value);
 
-            redisTemplate.opsForValue()
-                    .set(key, json);
+            redisTemplate.opsForValue().set(key, json);
 
         } catch (JsonProcessingException e) {
 
@@ -41,65 +36,45 @@ public class RedisService {
 
     public <T> void addMember(String key, T mem) {
         try {
-            String json =
-                    objectMapper.writeValueAsString(mem);
+            String json = objectMapper.writeValueAsString(mem);
             redisTemplate.opsForSet().add(key, json);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public <T> T get(
-            String key,
-            Class<T> clazz
-    ) {
+    public <T> T get(String key, Class<T> clazz) {
 
         try {
 
-            String json =
-                    redisTemplate.opsForValue()
-                            .get(key);
+            String json = redisTemplate.opsForValue().get(key);
 
-            if(json == null) {
+            if (json == null) {
                 return null;
             }
 
-            return objectMapper.readValue(
-                    json,
-                    clazz
-            );
+            return objectMapper.readValue(json, clazz);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public <T> List<T> getMembers(
-            String key,
-            Class<T> clazz
-    ) {
+    public <T> List<T> getMembers(String key, Class<T> clazz) {
 
-            Set<String> items =
-                    redisTemplate.opsForSet()
-                            .members(key);
+        Set<String> items = redisTemplate.opsForSet().members(key);
 
-            if (items == null || items.isEmpty()) {
-                return List.of();
+        if (items == null || items.isEmpty()) {
+            return List.of();
+        }
+
+        return items.stream().map(item -> {
+            try {
+                return objectMapper.readValue(item, clazz);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
-
-            return items.stream()
-                    .map(item -> {
-                        try {
-                            return objectMapper.readValue(
-                                    item,
-                                    clazz
-                            );
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
+        }).filter(Objects::nonNull).toList();
     }
 
     public void delete(String key) {

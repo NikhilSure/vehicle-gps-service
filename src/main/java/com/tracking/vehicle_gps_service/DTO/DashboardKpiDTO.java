@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 public class DashboardKpiDTO {
     private Long activeVehicles;
 
-    private Long onlineVehicles;
-
-    private Long offlineVehicles;
+    private Long totalDistanceTravelled;
 
     private Long totalAlerts;
 
